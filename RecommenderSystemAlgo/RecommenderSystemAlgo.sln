@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "RecommenderSystemAlgo", "RecommenderSystemAlgo\RecommenderSystemAlgo.pyproj", "{EA8EAF0B-CC0E-4BD9-9F27-A36177A1569B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA8EAF0B-CC0E-4BD9-9F27-A36177A1569B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA8EAF0B-CC0E-4BD9-9F27-A36177A1569B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {232A2188-4221-452B-9B75-83D15173B4E3}
+	EndGlobalSection
+EndGlobal
