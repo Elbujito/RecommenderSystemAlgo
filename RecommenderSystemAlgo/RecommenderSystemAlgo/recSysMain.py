@@ -26,15 +26,40 @@ if __name__ == "__main__":  # confirms that the code is under main function
     ###########################################################
     # content-based filtering using TF-IDF
     # extracting tags from list
-    songsbyplaylists_df['tag'] = songsbyplaylists_df.track_id.map(tracks_df.set_index('track_id')['album'])
-    TF = define_tags_occurence(songsbyplaylists_df, 'playlist_id', 'track_id', 'tag')
+    # extract album of track
+    songsbyplaylists_df['tag_album'] = songsbyplaylists_df.track_id.map(tracks_df.set_index('track_id')['album'])
+    TF_tracksAlbum = define_tags_occurence(songsbyplaylists_df, 'track_id', 'tag_album')
+    songsbyplaylists_df['TAG_WT'] = songsbyplaylists_df.track_id.map(TF_tracksAlbum.set_index('track_id')['TAG_WT'])
+    
+    # extract tags of tracks
+    tracksByTags = extract_tags_list(tracks_df, 'track_id', 'tags')
+    TF_tracksTag = define_tags_occurence(tracksByTags, 'track_id', 'tags')
+    
+    # extract artist_id of tracks
+    TF_tracksArtist = define_tags_occurence(tracks_df, 'track_id', 'artist_id')
+    
+    # extract playcount of tracks  
+    TF_tracksPlaycount = define_tags_occurence(tracks_df, 'track_id', 'playcount')
+    
+    # extract duration of tracks
+    TF_tracksDuration = define_tags_occurence(tracks_df, 'track_id', 'duration')
+    
+    # extract title of playlist
+    playlistsByTitle = extract_tags_list(playlists_df, 'playlist_id', 'title')
+    TF_playlistsTitle = define_tags_occurence(playlistsByTitle, 'playlist_id', 'title')
+    
+    # extract owner of playlists
+    TF_playlistsOwner = define_tags_occurence(playlists_df, 'playlist_id', 'duration')
+    
+    # extract created_at of playlists
+    TF_playlistsCreationDate = define_tags_occurence(playlists_df, 'playlist_id', 'created_at')
+    
+    # extract duration of playlists
+    TF_playlistsDuration = define_tags_occurence(playlists_df, 'playlist_id', 'duration')
     
     ############################################################
     # COMPUTE COSINE SIMILARITY
     ############################################################
-    songsbyplaylists_df['TAG_WT'] = songsbyplaylists_df.track_id.map(TF.set_index('track_id')['TAG_WT'])
-    print(TF)
-    
     print('Cosine similarity')
     pred = compute_cosine(songsbyplaylists_df, 'playlist_id', 'track_id', 'TAG_WT')
     
@@ -76,28 +101,7 @@ if __name__ == "__main__":  # confirms that the code is under main function
         strTracks.append(strFinal)
     
     newDf.insert(1, 'track_ids', strTracks)
-    print(newDf)
+    #print(newDf)
 
     # write csv recommendation file
-    newDf.to_csv('~/Documents/Polimi/RecommenderSystem/outputFiles/result.csv', sep=',' ,index=False)
-
-
-    
-
-
-
-    
-       
-
-
-    
-
-
-
-
-
-
-
-
-    
- 
+    #newDf.to_csv('~/Documents/Polimi/RecommenderSystem/outputFiles/result.csv', sep=',' ,index=False)
