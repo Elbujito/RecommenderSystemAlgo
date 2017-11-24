@@ -13,6 +13,32 @@ def read_file(path):
 
     return object_df
 
+
+def create_urm(userItemDF, userID, itemID,split=0.8):
+    # get playlists, tracks and interactions
+    playlists = np.array(userItemDF[userID])
+    tracks = np.array(userItemDF[itemID])
+    interactions = np.ones(len(tracks))      
+    
+    # compress data using cscr matrix and pivot
+    URM_all = sps.coo_matrix((interactions, (playlists, tracks)), dtype=np.float16)
+    URM_all.tocsr()
+    
+    #Create Data Set
+    train_test_split = float(split)
+    numInteractions = URM_all.nnz
+    train_mask = np.random.choice([True,False], numInteractions, p=[train_test_split, 1-train_test_split])
+
+    URM_train = sps.coo_matrix((interactions[train_mask], (playlists[train_mask], tracks[train_mask])), dtype=np.float16)
+    URM_train = URM_train.tocsr() 
+
+    test_mask = np.logical_not(train_mask)
+
+    URM_test = sps.coo_matrix((interactions[test_mask], (playlists[test_mask], tracks[test_mask])), dtype=np.float16)
+    URM_test = URM_test.tocsr()
+
+    return URM_train, URM_test, URM_all
+
 def create_mapTable_ID ( dataframe, columnID ):
     items = dataframe[columnID].drop_duplicates().reset_index(drop=True)
     corresp_df = pd.DataFrame.from_dict(items)
@@ -56,39 +82,44 @@ def define_tags_occurence ( userItemDF, userID, itemID, tagID ):
     
     return TF
 
-def compute_cosine(userItemDF, userID, itemID, interactionID):
+def compute_cosine(userItemDF, userID, itemID, interactionID, nbKNN=100):
     # interaction values must be in userItemDF
-    
-    # sort by playlist
-    userItemDF = userItemDF.sort_values(userID)
     # get playlists, tracks and interactions
     playlists = np.array(userItemDF[userID])
+    print()
     tracks = np.array(userItemDF[itemID])
-    interactions = np.array(userItemDF[interactionID])      
-    
+    interactions = np.array(userItemDF[interactionID])     
+       
     # compress data using cscr matrix and pivot
+    print("Creating URM all")
     URM_all = sps.coo_matrix((interactions, (playlists, tracks)), dtype=np.float16)
     URM_all.tocsr()
-    
-    #Create Data Set
-    train_test_split = 0.8
-    numInteractions = URM_all.nnz
-    train_mask = np.random.choice([True,False], numInteractions, p=[train_test_split, 1-train_test_split])
-
-    URM_train = sps.coo_matrix((interactions[train_mask], (playlists[train_mask], tracks[train_mask])), dtype=np.float16)
-    URM_train = URM_train.tocsr() 
-
-    test_mask = np.logical_not(train_mask)
-
-    URM_test = sps.coo_matrix((interactions[test_mask], (playlists[test_mask], tracks[test_mask])), dtype=np.float16)
-    URM_test = URM_test.tocsr()
 
     #compute the cosine
-    similarity = (URM_all.T * URM_all)
-    pred = URM_all * similarity
-    pred = pred.tocsr()
-    
-    return pred
+    print("Compute cosine")
+    similarity = URM_all.T * URM_all
+    similarity = similarity.tocsc()
+
+    #get only the 50 nearestneightbours
+    print("Item KNN")
+    print(" nb row",similarity.shape[0])
+    print(" nb col",similarity.shape[1])
+    cpt = 0
+    for col_index in range(similarity.shape[1]):
+        
+        this_item_weights = similarity.data[similarity.indices[col_index]:similarity.indices[col_index+1]]
+        #item KNN
+        nearestNeightbours = np.zeros(len(this_item_weights))
+        nearestNeightbours.astype(int)
+        top_k_idx = np.argsort(this_item_weights)[-nbKNN:]
+        for ind in top_k_idx:
+            nearestNeightbours[ind] = this_item_weights[ind]
+        similarity.data[similarity.indices[col_index]:similarity.indices[col_index+1]] = nearestNeightbours
+        if(len(nearestNeightbours)<5):
+            cpt = cpt +1
+    print(" row useless ",cpt)
+
+    return URM_all.tocsr(), similarity.tocsr()
 
 
 

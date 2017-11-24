@@ -1,8 +1,31 @@
+import pandas as pd
+import numpy as np
+import scipy.sparse as sps
+
 ############################################################################
 #	                       EVALUATION METHODS                              #
 ############################################################################
 
 # Evaluation metrics only used when your dataset(URM_all) is splited into 2 Set URM_test and URM_train
+
+#Create the URM test Matrix
+def create_URM_test(songsbyplaylists_df, train_test_split=0.8):
+
+    numInteractions = len(songsbyplaylists_df['playlist_id'])
+    interractions = np.ones(numInteractions)
+    userList = np.array(list(songsbyplaylists_df['playlist_id']))
+    itemList = np.array(list(songsbyplaylists_df['track_id']))
+    ratioSplit = int(len(userList) * train_test_split)
+
+    train_mask = np.random.choice([True,False], numInteractions, p=[train_test_split, 1-train_test_split])
+
+    test_mask = np.logical_not(train_mask)
+
+    URM_test = sps.coo_matrix((interractions[test_mask], (userList[test_mask], itemList[test_mask])))
+    URM_test = URM_test.tocsr()
+
+    songsbyplaylists_df = songsbyplaylists_df[0:ratioSplit]
+    return URM_test, songsbyplaylists_df
 
 #Compute Mean Average Precision
 def MAP(recommended_items, relevant_items):
@@ -24,7 +47,7 @@ def recall(recommended_items, relevant_items):
     recall_score = np.sum(is_relevant, dtype=np.float32) / relevant_items.shape[0]
     
     return recall_score
-	
+
 #Compute Precision
 #@description : The precision is the proportion of recommendations that are good recommendations
 def precision(recommended_items, relevant_items):
@@ -46,14 +69,15 @@ def evaluate_algorithm(URM_test, predic_df, target_playlist):
     num_eval = 0
 
 	# evaluate only recommended playlist
-    for id in target_playlist:
+    recommend_itemList = np.array(predic_df['track_ids'])
+    for id in np.array(predic_df['playlist_id']):
 
         relevant_items = URM_test[id].indices
-        
+
         if len(relevant_items)>0:
             
-            recommended_itemsStr = predic_df.loc['playlist_id'==id,'track_ids']
-			recommended_items = recommended_itemsStr.split(",")
+            recommended_itemsStr = recommend_itemList[id]
+            recommended_items = recommended_itemsStr.split(",")
             num_eval+=1
 
             cumulative_precision += precision(recommended_items, relevant_items)
