@@ -31,7 +31,7 @@ def MAP(recommended_items, relevant_items):
 
     return map_score
 
-def evaluate_algorithm(URM_test,URM_train, similarity, target_playlist, at=5):
+def evaluate_algorithm(URM_test,rec_object, target_playlist, at=5):
     print("Evaluate")
     cumulative_precision = 0.0
     cumulative_recall = 0.0
@@ -45,7 +45,7 @@ def evaluate_algorithm(URM_test,URM_train, similarity, target_playlist, at=5):
         
         if len(relevant_items)>0:
             
-            recommended_items = recommend(URM_train, similarity, user_id, at=at)
+            recommended_items = rec_object.recommend(user_id, at=at)
             num_eval+=1
 
             cumulative_precision += precision(recommended_items, relevant_items)
