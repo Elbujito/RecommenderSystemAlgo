@@ -20,7 +20,7 @@ def export_csv(recommend_df,path):
         strFinal = str(recommend_df.iloc[i]['track_id1']) + ' ' + str(recommend_df.iloc[i]['track_id2']) + ' ' + str(recommend_df.iloc[i]['track_id3']) + ' ' + str(recommend_df.iloc[i]['track_id4']) + ' ' + str(recommend_df.iloc[i]['track_id5'])
         strTracks.append(strFinal)
 
-    newDf.insert(1, 'track_ids', strTracks)
+    df.insert(1, 'track_ids', strTracks)
     print(df)
 
     # write csv recommendation file
@@ -57,7 +57,7 @@ def init():
 
     return playlists_df, tracks_df, targetplaylists_df, targettracks_df, songsbyplaylists_df, map_playlistID, map_trackID
 
-def unMap(track_final, map_playlistID, map_trackID):
+def unMap(track_final, map_playlistID, map_trackID, target_playlist):
     print("UnMap")
     recommend_df = pd.DataFrame(track_final)
     recommend_df.columns = ['track_id1', 'track_id2', 'track_id3', 'track_id4', 'track_id5']

@@ -14,7 +14,7 @@ class ItemKNN_CF_Recommender(object):
 		#get only the n nearestneightbours
 		print("Item KNN")
 		#csc more faster
-		similarity = self.similarity.tocsc()
+		similarity = self.similarity.tocsc() #csc
 		for col_index in range(URM.shape[1]):      
 			this_item_weights = similarity.data[similarity.indices[col_index]:similarity.indices[col_index+1]]
 			nearestNeightbours = np.zeros(len(this_item_weights))
@@ -24,7 +24,7 @@ class ItemKNN_CF_Recommender(object):
 				nearestNeightbours[ind] = this_item_weights[ind]
 			similarity.data[similarity.indices[col_index]:similarity.indices[col_index+1]] = nearestNeightbours
 
-		self.similarity = similarity.tocsr()
+		self.similarity = similarity.tocsr() #csr
 
 	def recommend(self, user_id, at=None):
 

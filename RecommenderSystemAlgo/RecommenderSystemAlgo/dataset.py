@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import scipy.sparse as sps
+import scipy
 
 def create_urm(userItemDF, userID, itemID, weightID, split=0.5):
     # get playlists, tracks and interactions
@@ -26,3 +27,39 @@ def create_urm(userItemDF, userID, itemID, weightID, split=0.5):
 
     return URM_all, URM_train, URM_test
 
+def compute_cosine(URM_all):
+    #compute the cosine
+    print("Compute cosine")
+
+    similarity = URM_all.T * URM_all
+
+    return URM_all.tocsr(), similarity
+
+def compute_cosine_shrinkage(ICM, shrinkage=10):
+
+    similarity = ICM.T * ICM
+
+    # and apply the shrinkage
+    if shrinkage > 0:
+        similarity = apply_shrinkage(ICM, similarity)
+          
+        
+    return dist
+
+def apply_shrinkage(ICM, similarity, shrinkage=10):
+    print("Apply shrinkage")  
+    # create an "indicator" version of X (i.e. replace values in X with ones)
+    ICM_ind = ICM.copy()
+    ICM_ind.data = np.ones_like(ICM_ind.data)
+    # compute the co-rated counts
+    co_counts = ICM_ind * ICM_ind.T
+    # remove the diagonal
+    co_counts = co_counts - sps.dia_matrix((co_counts.diagonal()[scipy.newaxis, :], [0]), shape=co_counts.shape)
+    # compute the shrinkage factor as co_counts_ij / (co_counts_ij + shrinkage)
+    # then multiply dist with it
+    co_counts_shrink = co_counts.copy()
+    co_counts_shrink.data += shrinkage
+    co_counts.data /= co_counts_shrink.data
+    similarity.data *= co_counts.data
+
+    return similarity.tocsr()
