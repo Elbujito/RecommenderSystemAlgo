@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import scipy.sparse as sps
 
-class ItemKNN_CF_Recommender(object):
+class ContentBasedFiltering_Recommender(object):
     """ ItemKNN recommender with cosine similarity and no shrinkage"""
     def __init__(self, URM, similarity, playlists, k=100):
         self.dataset = URM
@@ -10,6 +10,7 @@ class ItemKNN_CF_Recommender(object):
         self.target_playlists = playlists
         self.similarity = similarity
         self.W_sparse = None
+        self.scores = None
 
     def fit(self, URM):
         #get only the n nearestneightbours
@@ -25,13 +26,13 @@ class ItemKNN_CF_Recommender(object):
             for ind in top_k_idx:
                 nearestNeightbours[ind] = this_item_weights[ind]
                 similarity.data[similarity.indices[col_index]:similarity.indices[col_index+1]] = nearestNeightbours
-        self.similarity = similarity.tocsr() #csr
+        self.W_sparse = similarity.tocsr() #csr
 
     def recommend(self, user_id, at=None):
 
         # compute the scores using the dot product
         user_profile = self.dataset[user_id]
-        scores = user_profile.dot(self.similarity).toarray().ravel()
+        scores = user_profile.dot(self.W_sparse).toarray().ravel()
         # rank items
         ranking = scores.argsort()[::-1]
         seen = user_profile.indices

@@ -42,6 +42,7 @@ def init():
 
     #keep only target tracks
     songsbyplaylists_df = songsbyplaylists_df[(songsbyplaylists_df.track_id.isin(targettracks_df.track_id))]
+    #tracks_df = tracks_df[(tracks_df.track_id.isin(targettracks_df.track_id))]
 
     # creating correspondance tables
     map_playlistID = create_mapTable_ID(playlists_df, 'playlist_id')

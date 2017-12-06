@@ -3,22 +3,107 @@ import numpy as np
 import re
 import math
 
+def compute_ICM_idf(ICM_all):
+
+    num_tot_items = ICM_all.shape[0]
+
+    #count how many items have a certain feature
+    items_per_feature = (ICM_all > 0).sum(axis=0)
+
+    IDF = np.array(np.log(num_tot_items / items_per_feature))[0]
+        
+    ICM_idf = ICM_all.copy()
+    # compute the number of non-zeros in each col
+    # NOTE: this works only if X is instance of csc_matrix
+    col_nnz = np.diff(ICM_idf.tocsc().indptr)
+    # then normalize the values in each col
+    ICM_idf.data *= np.repeat(IDF, col_nnz)
+    return ICM_idf
+
+def extract_none_list( dataframe, tagID):
+    #extract tags
+    print("Extract none")
+    for i in range(len(dataframe.index)):       
+        if  math.isnan(dataframe.iloc[i][tagID]):
+            dataframe.iloc[i][tagID]= 0
+           
+    return dataframe[tagID]
+
 def extract_tags_list( dataframe, itemID, tagID):
     #extract tags
-    print("Exctract tags")
+    print("Extract tags")
     items=[]
     tags=[]
 
     for i in range(len(dataframe.index)):
-        if dataframe.iloc[i][tagID] == "[]" or dataframe.iloc[i][tagID] == "[None]":
-            items.append(dataframe.iloc[i][itemID])
+        value = dataframe.iloc[i][tagID]
+        id = dataframe.iloc[i][itemID]
+
+        tab = [0,0,0,0,0]        
+        items.append(id)
+        if value != "[]":                      
+            numbers=re.findall(r'\d+', value)
+            for x in range(len(numbers)):
+                tab[x] = numbers[x]           
+        tags.append(tab)
+        
+        
+    result = pd.DataFrame(tags)
+    result.columns = ['tags1', 'tags2','tags3','tags4','tags5']
+    result.insert(0,itemID,items)
+    return result
+
+def extract_album_list(dataframe, itemID, tagID):
+    #extract tags
+    print("Extract album")
+    items=[]
+    tags=[]
+
+    for i in range(len(dataframe.index)):
+        value = dataframe.iloc[i][tagID]
+        id = dataframe.iloc[i][itemID]
+        if  value == "[]" or value == "[None]":
+            items.append(id)
             tags.append(0)
         else:
-            numbers=re.findall(r'\d+', dataframe.iloc[i][tagID])
-            for x in numbers:
-                items.append(dataframe.iloc[i][itemID])
-                tags.append(int(x))
-   
+            numbers=re.findall(r'\d+', value)
+            items.append(id)
+            tags.append(int(numbers[0]))
+
+    result= pd.DataFrame( {itemID: items, tagID: tags } )
+    return result
+
+def extract_artistOrDuration_list(dataframe, itemID, tagID):
+    #extract tags
+    print("Extract artist or duration or playcount")
+    items=[]
+    tags=[]
+
+    for i in range(len(dataframe.index)):
+        value = dataframe.iloc[i][tagID]
+        id = dataframe.iloc[i][itemID]
+        items.append(id)
+        tags.append(int(value))
+
+    result= pd.DataFrame( {itemID: items, tagID: tags } )
+    return result
+
+def extract_playcount_list(dataframe, itemID, tagID):
+    #extract tags
+    print("Extract artist or duration or playcount")
+    items=[]
+    tags=[]
+
+    for i in range(len(dataframe.index)):
+        value = dataframe.iloc[i][tagID]
+        id = dataframe.iloc[i][itemID]
+        if  value==-1 or math.isnan(value):
+            items.append(id)
+            tags.append(0)
+        else:
+            items.append(id)
+            tags.append(int(value))
+
     result= pd.DataFrame( {itemID: items, tagID: tags } )
     return result
 
